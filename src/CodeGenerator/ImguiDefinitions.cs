@@ -24,7 +24,6 @@ namespace CodeGenerator
         }
         public void LoadFrom(string directory)
         {
-            
             JObject typesJson;
             using (StreamReader fs = File.OpenText(Path.Combine(directory, "structs_and_enums.json")))
             using (JsonTextReader jr = new JsonTextReader(fs))
@@ -37,6 +36,13 @@ namespace CodeGenerator
             using (JsonTextReader jr = new JsonTextReader(fs))
             {
                 functionsJson = JObject.Load(jr);
+            }
+
+            JObject implFunctionsJson;
+            using (StreamReader fs = File.OpenText(Path.Combine(directory, "impl_definitions.json")))
+            using (JsonTextReader jr = new JsonTextReader(fs))
+            {
+                implFunctionsJson = JObject.Load(jr);
             }
 
             JObject variantsJson = null;
@@ -98,7 +104,7 @@ namespace CodeGenerator
                 return new TypeDefinition(name, fields);
             }).Where(x => x != null).ToArray();
 
-            Functions = functionsJson.Children().Select(jt =>
+            Functions = functionsJson.Children().Concat(implFunctionsJson.Children()).Select(jt =>
             {
                 JProperty jp = (JProperty)jt;
                 string name = jp.Name;
